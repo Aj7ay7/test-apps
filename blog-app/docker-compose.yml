@@ -18,6 +18,8 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    networks:
+      - appnet
 
   app:
     build: .
@@ -32,6 +34,12 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+    networks:
+      - appnet
+
+networks:
+  appnet:
+    driver: bridge
 
 volumes:
   postgres_data:

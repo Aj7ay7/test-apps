@@ -17,6 +17,21 @@ if [ -n "$DATABASE_URL" ]; then
     echo "Seed attempt $i failed, retrying in 3s..."
     sleep 3
   done
+
+  echo "Checking database connection before starting app..."
+  for i in 1 2 3 4 5 6 7 8 9 10; do
+    if (cd /app/db-tools && echo "SELECT 1" | npx prisma db execute --stdin 2>/dev/null); then
+      echo "Database reachable."
+      break
+    fi
+    if [ "$i" -eq 10 ]; then
+      echo "ERROR: Cannot reach database at postgres:5432 after 30s."
+      echo "Ensure app and postgres run in the same Docker Compose project: docker compose up -d --build"
+      exit 1
+    fi
+    echo "Connection check $i/10 failed, retrying in 3s..."
+    sleep 3
+  done
 fi
 
 echo "Starting Next.js..."
