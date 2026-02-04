@@ -6,21 +6,21 @@ if [ -n "$DATABASE_URL" ]; then
   sleep 3
 
   echo "Applying schema (prisma db push)..."
-  while ! cd /app/db-tools && npx prisma db push --accept-data-loss --skip-generate; do
+  while ! (cd /app/db-tools && npx prisma db push --accept-data-loss --skip-generate --schema=prisma/schema.prisma); do
     echo "Schema apply failed or Postgres not ready, retrying in 3s..."
     sleep 3
   done
 
   echo "Seeding (idempotent)..."
   for i in 1 2 3 4 5; do
-    if (cd /app/db-tools && npx prisma db seed); then break; fi
+    if (cd /app/db-tools && npx prisma db seed --schema=prisma/schema.prisma); then break; fi
     echo "Seed attempt $i failed, retrying in 3s..."
     sleep 3
   done
 
   echo "Checking database connection before starting app..."
   for i in 1 2 3 4 5 6 7 8 9 10; do
-    if (cd /app/db-tools && echo "SELECT 1" | npx prisma db execute --stdin 2>/dev/null); then
+    if (cd /app/db-tools && echo "SELECT 1" | npx prisma db execute --stdin --schema=prisma/schema.prisma 2>/dev/null); then
       echo "Database reachable."
       break
     fi

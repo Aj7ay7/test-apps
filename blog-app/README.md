@@ -110,6 +110,10 @@ If you get **"Bind for 0.0.0.0:3000 failed: port is already allocated"**, port 3
 
 2. **Set a free host port**: In Dokploy, set `APP_PORT` to a port that's not in use (e.g. `3002`, `3080`). Set all other env vars from `.env.example` (no secrets in repo).
 
+### Can't reach database server at `postgres:5432`
+
+The **app** container cannot reach the **postgres** container; both must be on the **same Docker network**. (1) Run both with Docker Compose from this directory: `docker compose up -d --build`. (2) If using Dokploy, deploy the full stack (postgres + app) in one project and set `DATABASE_URL=postgresql://user:pass@postgres:5432/db`. (3) Verify: `docker compose exec app getent hosts postgres` — if this fails, the app is not on the same network as postgres. The entrypoint now checks the DB before starting Next.js and exits with this hint if unreachable.
+
 ### 502 Bad Gateway (e.g. bakra.blog.devshifu.com)
 
 If the site shows **502 Bad Gateway**, the reverse proxy cannot reach the app. Check: (1) **App container running** – check Dokploy/logs; if it restarts, fix `DATABASE_URL` (use `postgres:5432` inside Docker). (2) **App listens on 0.0.0.0:3000** – compose sets `HOSTNAME=0.0.0.0`, `PORT=3000`. (3) **Proxy upstream** – Dokploy must target **app** service on port **3000** (`app:3000`). (4) **Startup** – first start runs migrations; wait 30–60 s. **Logs:** `docker compose logs app` for “Ready” or Prisma/DB errors.
