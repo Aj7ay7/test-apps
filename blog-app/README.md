@@ -114,6 +114,18 @@ If you get **"Bind for 0.0.0.0:3000 failed: port is already allocated"**, port 3
 
 The **app** container cannot reach the **postgres** container; both must be on the **same Docker network**. (1) Run both with Docker Compose from this directory: `docker compose up -d --build`. (2) If using Dokploy, deploy the full stack (postgres + app) in one project and set `DATABASE_URL=postgresql://user:pass@postgres:5432/db`. (3) Verify: `docker compose exec app getent hosts postgres` — if this fails, the app is not on the same network as postgres. The entrypoint now checks the DB before starting Next.js and exits with this hint if unreachable.
 
+### `relation "public.Post" does not exist`
+
+The schema was not applied to the database. Apply it once:
+
+- **With app container running:**  
+  `docker compose exec app sh -c 'cd /app/db-tools && npx prisma db push --accept-data-loss --schema=prisma/schema.prisma && npx prisma db seed --schema=prisma/schema.prisma'`
+- **From host** (Postgres on localhost, e.g. port 5433):  
+  Set `DATABASE_URL=postgresql://user:pass@localhost:5433/postgres` in `.env`, then run  
+  `npx prisma db push && npm run db:seed`
+
+Then reload the app.
+
 ### 502 Bad Gateway (e.g. bakra.blog.devshifu.com)
 
 If the site shows **502 Bad Gateway**, the reverse proxy cannot reach the app. Check: (1) **App container running** – check Dokploy/logs; if it restarts, fix `DATABASE_URL` (use `postgres:5432` inside Docker). (2) **App listens on 0.0.0.0:3000** – compose sets `HOSTNAME=0.0.0.0`, `PORT=3000`. (3) **Proxy upstream** – Dokploy must target **app** service on port **3000** (`app:3000`). (4) **Startup** – first start runs migrations; wait 30–60 s. **Logs:** `docker compose logs app` for “Ready” or Prisma/DB errors.
