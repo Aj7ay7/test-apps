@@ -32,7 +32,7 @@ services:
     expose:
       - "3000"
     ports:
-      - "${APP_PORT:-3000}:3000"
+      - "${APP_PORT:-3001}:3000"
     environment:
       HOSTNAME: "0.0.0.0"
       PORT: "3000"

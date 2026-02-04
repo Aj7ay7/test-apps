@@ -28,7 +28,7 @@ Uses the **Supabase Postgres** Docker image (same engine as Supabase cloud). You
    docker compose up -d --build
    ```
    - **Supabase DB** (Postgres): `localhost:5433` (or `POSTGRES_PORT`; default 5433 to avoid conflict with local Postgres on 5432)
-   - **App**: [http://localhost:3000](http://localhost:3000)
+   - **App**: [http://localhost:3001](http://localhost:3001) (or `APP_PORT`; default 3001 to avoid conflict with port 3000)
 
    On first start the app runs `prisma db push` and `prisma db seed` inside the container. The host `prisma/` folder is mounted so you can add or change seed content without rebuilding. If you see "Can't reach database server at supabase-db:5432", ensure both `supabase-db` and `app` are running in the same compose project (same network).
 
@@ -86,7 +86,7 @@ When you want to move from Supabase (local container or cloud) to **your own Pos
 
 ## Deploy with Dokploy
 
-1. **Port conflict** – If you get "Bind for 0.0.0.0:3000 failed: port is already allocated", use the Dokploy override so the app does not bind a host port (Dokploy's proxy reaches the app by service name):
+1. **Port conflict** – If you get "Bind for 0.0.0.0:3000 failed: port is already allocated", either set `APP_PORT=3001` (default in this repo) in your env, or use the Dokploy override so the app does not bind a host port (Dokploy's proxy reaches the app by service name):
    ```yaml
    # In Dokploy, add override (e.g. docker-compose.dokploy.yml):
    services:
