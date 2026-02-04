@@ -21,8 +21,10 @@ services:
     build: .
     restart: unless-stopped
     expose:
-      - '3000'
+      - "3000"
     environment:
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
       DATABASE_URL: ${DATABASE_URL}
     depends_on:
       postgres:
