@@ -27,7 +27,7 @@ Uses the **Supabase Postgres** Docker image (same engine as Supabase cloud). You
    ```bash
    docker compose up -d --build
    ```
-   - **Supabase DB** (Postgres): `localhost:5432` (or `POSTGRES_PORT`; user/password from env)
+   - **Supabase DB** (Postgres): `localhost:5433` (or `POSTGRES_PORT`; default 5433 to avoid conflict with local Postgres on 5432)
    - **App**: [http://localhost:3000](http://localhost:3000)
 
    On first start the app runs `prisma db push` and `prisma db seed` inside the container. The host `prisma/` folder is mounted so you can add or change seed content without rebuilding. If you see "Can't reach database server at supabase-db:5432", ensure both `supabase-db` and `app` are running in the same compose project (same network).
@@ -41,7 +41,7 @@ Uses the **Supabase Postgres** Docker image (same engine as Supabase cloud). You
 
 3. **Or run the app on your machine** (DB in Docker)
    - Start only the Supabase DB: `docker compose up -d supabase-db`
-   - In `.env` set: `DATABASE_URL="postgresql://postgres:postgres@localhost:5432/postgres"`
+   - In `.env` set: `DATABASE_URL="postgresql://postgres:postgres@localhost:5433/postgres"` (use port 5433 if you kept default `POSTGRES_PORT`)
    - Then: `npm install && npx prisma generate && npx prisma db push && npm run db:seed && npm run dev`
 
 ## Quick start: Supabase cloud
@@ -67,14 +67,14 @@ When you want to move from Supabase (local container or cloud) to **your own Pos
      ```
      Or from the host if you have `pg_dump`:
      ```bash
-     pg_dump -h localhost -p 5432 -U postgres -d postgres --no-owner --no-acl -F c -f blog.dump
+     pg_dump -h localhost -p 5433 -U postgres -d postgres --no-owner --no-acl -F c -f blog.dump
      ```
    - **Supabase cloud**: use Dashboard → Database → Backups, or `pg_dump` with your project’s connection string.
 
 2. **Restore into your Postgres app**
    - Start your target Postgres (e.g. `blog-app` with `docker compose up -d postgres`), then:
      ```bash
-     pg_restore -h localhost -p 5432 -U postgres -d postgres --no-owner --no-acl --clean --if-exists blog.dump
+     pg_restore -h localhost -p 5433 -U postgres -d postgres --no-owner --no-acl --clean --if-exists blog.dump
      ```
      Or with Docker:
      ```bash
@@ -96,6 +96,10 @@ When you want to move from Supabase (local container or cloud) to **your own Pos
    Or run locally with: `docker compose -f docker-compose.yml -f docker-compose.dokploy.yml up -d`
 
 2. **Environment** – In Dokploy, set `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` and either leave `DATABASE_URL` unset or set `DATABASE_URL=postgresql://user:pass@supabase-db:5432/db`. Deploy the **full stack** (supabase-db + app) in one project so they share a network.
+
+### Bind for 0.0.0.0:5432 failed: port is already allocated
+
+Another process (e.g. local Postgres) is using port 5432. Set a different host port in `.env`: `POSTGRES_PORT=5433` (default in this repo). The app still connects to the DB inside Docker at `supabase-db:5432`; only the host mapping changes.
 
 ### Can't reach database server at `supabase-db:5432`
 

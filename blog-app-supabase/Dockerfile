@@ -1,7 +1,10 @@
-# Build stage
-FROM node:20-alpine AS builder
+# Build stage (Debian so Prisma gets OpenSSL 3; Alpine musl would need libssl.so.1.1)
+FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
+
+RUN apt-get update -y && apt-get install -y --no-install-recommends openssl ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
 # Install dependencies
 COPY package.json package-lock.json ./
