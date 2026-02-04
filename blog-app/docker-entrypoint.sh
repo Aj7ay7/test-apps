@@ -12,7 +12,11 @@ if [ -n "$DATABASE_URL" ]; then
   done
 
   echo "Seeding (idempotent)..."
-  (cd /app/db-tools && npx prisma db seed) || true
+  for i in 1 2 3 4 5; do
+    if (cd /app/db-tools && npx prisma db seed); then break; fi
+    echo "Seed attempt $i failed, retrying in 3s..."
+    sleep 3
+  done
 fi
 
 echo "Starting Next.js..."

@@ -1,4 +1,6 @@
 # Secrets come from environment (e.g. .env or Dokploy). Do not commit secrets.
+# When running with Docker Compose, DATABASE_URL must use host "postgres" (not localhost).
+# If DATABASE_URL is unset, the app service will build it from POSTGRES_* below.
 services:
   postgres:
     image: postgres:16-alpine
@@ -25,7 +27,8 @@ services:
     environment:
       HOSTNAME: "0.0.0.0"
       PORT: "3000"
-      DATABASE_URL: ${DATABASE_URL}
+      # Use DATABASE_URL if set (e.g. Dokploy); otherwise build from POSTGRES_* so host is "postgres"
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}}
     depends_on:
       postgres:
         condition: service_healthy
