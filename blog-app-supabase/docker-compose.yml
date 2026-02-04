@@ -1,6 +1,8 @@
 # Supabase Postgres container (same engine as Supabase cloud).
 # Backup from this DB, then restore into your own Postgres app when transitioning.
 # Secrets come from environment (e.g. .env or Dokploy). Do not commit secrets.
+# When running with Docker Compose, DATABASE_URL must use host "supabase-db" (not localhost).
+# If DATABASE_URL is unset, the app service will build it from POSTGRES_* below.
 services:
   supabase-db:
     image: supabase/postgres:15.8.1.060
@@ -21,20 +23,33 @@ services:
       timeout: 5s
       retries: 10
       start_period: 45s
+    networks:
+      - appnet
 
   app:
     build: .
     restart: unless-stopped
+    expose:
+      - "3000"
     ports:
       - "${APP_PORT:-3000}:3000"
     environment:
-      DATABASE_URL: ${DATABASE_URL}
+      HOSTNAME: "0.0.0.0"
+      PORT: "3000"
+      # Use DATABASE_URL if set (e.g. Dokploy); otherwise build from POSTGRES_* so host is "supabase-db"
+      DATABASE_URL: ${DATABASE_URL:-postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@supabase-db:5432/${POSTGRES_DB}}
     depends_on:
       supabase-db:
         condition: service_healthy
+    networks:
+      - appnet
     # Use host prisma/ so you can add new seed content without rebuilding the image
     volumes:
       - ./prisma:/app/db-tools/prisma:ro
+
+networks:
+  appnet:
+    driver: bridge
 
 volumes:
   supabase_db_data:

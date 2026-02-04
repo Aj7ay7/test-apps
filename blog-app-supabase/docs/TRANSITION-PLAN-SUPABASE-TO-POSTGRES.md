@@ -479,14 +479,17 @@ If something goes wrong after cutover:
 
 ---
 
-## 12. Optional: Supabase Auth users
+## 12. Optional: Supabase Auth migration
 
-If you had **Supabase Auth** with application users (e.g. authors):
+If you use **Supabase Auth** (email/password, OAuth, magic link), you need to replace it when moving to Postgres. That includes:
 
-- Auth data lives in Supabase’s `auth.users` (and related tables).
-- To move them: export `auth.users` (and any custom auth tables) via SQL or Supabase APIs, restore into your DB (e.g. `auth` schema or `users` table), and replace Supabase Auth in the app with your own auth (e.g. NextAuth) that reads from your Postgres.
+- Choosing a new auth solution (e.g. **Auth.js**, Clerk, custom JWT) that works with your Postgres.
+- Exporting users from `auth.users` and importing them into your new user store.
+- Replacing sign-up/sign-in and session handling in the app.
 
-The current blog-app schema does not include a `User` model; this section applies if you add auth later.
+**See the dedicated guide:** [Auth migration: Supabase Auth → Postgres-based auth](./AUTH-MIGRATION-SUPABASE-TO-POSTGRES.md). It covers options (NextAuth/Auth.js, Clerk, custom, SSO), migrating existing users, and how to handle enterprise SSO (SAML/OIDC).
+
+The current blog-app schema does not include a `User` model; add one when you add auth.
 
 ---
 
@@ -520,4 +523,5 @@ flowchart LR
 
 - [PRD: Complete Move from Supabase to PostgreSQL](./PRD-SUPABASE-TO-POSTGRES.md)
 - [Edge Cases and Verification (99.9999% data integrity)](./EDGE-CASES-AND-VERIFICATION.md)
+- [Auth migration: Supabase Auth → Postgres-based auth](./AUTH-MIGRATION-SUPABASE-TO-POSTGRES.md)
 - [README](../README.md) – Backup/restore quick reference
