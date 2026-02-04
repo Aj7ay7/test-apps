@@ -1,0 +1,40 @@
+# Supabase Postgres container (same engine as Supabase cloud).
+# Backup from this DB, then restore into your own Postgres app when transitioning.
+# Secrets come from environment (e.g. .env or Dokploy). Do not commit secrets.
+services:
+  supabase-db:
+    image: supabase/postgres:15.8.1.060
+    container_name: blog-app-supabase-db
+    restart: unless-stopped
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - supabase_db_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -h localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 45s
+
+  app:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "${APP_PORT:-3000}:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+    depends_on:
+      supabase-db:
+        condition: service_healthy
+    # Use host prisma/ so you can add new seed content without rebuilding the image
+    volumes:
+      - ./prisma:/app/db-tools/prisma:ro
+
+volumes:
+  supabase_db_data:

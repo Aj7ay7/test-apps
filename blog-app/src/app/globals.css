@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #fafafa;
+  --foreground: #171717;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Markdown prose */
+.prose pre {
+  @apply rounded-lg overflow-x-auto text-sm my-4 p-4 bg-zinc-900 text-zinc-100 border border-zinc-800;
+}
+.prose pre code {
+  @apply bg-transparent p-0 text-inherit;
+}
+.prose code:not(pre code) {
+  @apply px-1.5 py-0.5 rounded bg-zinc-200 dark:bg-zinc-800 text-sm font-mono;
+}
+.prose h1 { @apply text-3xl font-bold mt-8 mb-4; }
+.prose h2 { @apply text-2xl font-bold mt-6 mb-3; }
+.prose h3 { @apply text-xl font-semibold mt-4 mb-2; }
+.prose p { @apply my-3 leading-relaxed; }
+.prose ul { @apply list-disc pl-6 my-3; }
+.prose ol { @apply list-decimal pl-6 my-3; }
+.prose a { @apply text-blue-600 dark:text-blue-400 hover:underline; }
+.prose blockquote { @apply border-l-4 border-zinc-300 dark:border-zinc-600 pl-4 my-3 italic text-zinc-600 dark:text-zinc-400; }
+
+/* Highlight.js theme (dark) */
+.hljs { @apply bg-transparent; }
